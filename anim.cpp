@@ -4,8 +4,9 @@
 #include "anim.h"
 #include "brightness.h"
 #include "config.h"
+#include "NeoPixelWrapper.cpp"
 
-NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod>* strip;
+NeoPixelWrapper * strip;
 
 extern LianaConfig currentConfig;
 Anim::Anim() 
@@ -41,7 +42,7 @@ void Anim::run()
     //changes from 1 to 0 during transition, so we interpolate from current color to previous
     float transc = (float)((long)transms - (long)millis()) / TRANSITION_MS;
     Color * leds_prev = (leds == leds1) ? leds2 : leds1;
-    
+    int BRIGHTNESS = currentConfig.brightness;
     if (transc > 0) {
         for(int i=0; i<ledsNum; i++) {
             //transition is in progress
@@ -86,10 +87,10 @@ void Anim::doSetUp()
 {
   if (!initialized) {
     currentConfig.configLoad();
-    ledsNum = currentConfig.leds;
-    strip = new NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod>(ledsNum, 2);
+    strip = new NeoPixelWrapper();
     
-    strip->Begin();
+    ledsNum = currentConfig.leds;
+    strip->Begin(currentConfig.neofeature, ledsNum, 2);
     initialized = true;
   }
   if (!setUpOnPalChange) {
@@ -138,6 +139,11 @@ void Anim::setAnim(byte animInd)
         case 7: 
             setUpImpl = &Anim::animFly_SetUp;
             runImpl = &Anim::animFly_Run;
+            setUpOnPalChange = false;
+        break;                                
+        case 8: 
+            setUpImpl = &Anim::animPulse_SetUp;
+            runImpl = &Anim::animPulse_Run;
             setUpOnPalChange = false;
         break;                                
         case 100://special "magic" animation

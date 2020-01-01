@@ -87,16 +87,21 @@ bool webFileRead(String path) {
     }
     return true;
   } //if SPIFFS.exists
+  else{
+    Serial.printf("Not found: '%s'\n",path.c_str());
+  }
   return false;
 } 
 
 void webOnSetup() {
-  if (!webServer.hasArg("leds")) {
-    Serial.println("No leds arg");
-  }
-  Serial.println("Setup save leds="+webServer.arg("leds"));
-  currentConfig.leds = webServer.arg("leds").toInt();
+  int leds = webServer.arg("leds").toInt();
+  int brightness = webServer.arg("brightness").toInt();
+  int neofeature = webServer.arg("neofeature").toInt();
+  Serial.printf("Setup save leds=%d , brightness=%d, neofeature=%d\n", leds, brightness, neofeature);
+  currentConfig.leds = leds;
+  currentConfig.brightness = brightness;
+  currentConfig.neofeature = neofeature;
   currentConfig.configSave();
   webServer.sendHeader("Cache-Control", " max-age=172800");
-  webServer.send(302, "text/html", "<script>window.location='/?msg=Please%20restart%20board%20for%20settings%20to%20take%20effect'</script>Not found. <a href='/'>Home</a>");
+  webServer.send(302, "text/html", "<script>window.location='/?restartmsg=block'</script>Not found. <a href='/'>Home</a>");
 }

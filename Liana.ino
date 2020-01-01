@@ -16,7 +16,7 @@
 #include "anim.h"
 #include "config.h"
 
-#define ANIMS 7 //number of animations (not including start one) to cycle randomly
+#define ANIMS 8 //number of animations (not including start one) to cycle randomly
 #define PALS 8 //number of palettes
 #define INTERVAL 30000 //change interval, msec
 
@@ -47,7 +47,23 @@ void setup() {
   anim.doSetUp();
 
 
+  if (SPIFFS.begin()) {
+    Serial.println("SPIFFS started");
+  } else {
+    Serial.println("SPIFFS FAILED");
+  }
+
+  File file = SPIFFS.open("/index.htm", "r");
+  if (!file) {
+    Serial.println("/index.htm not found");
+  } else {
+    Serial.printf("/index.htm size: %d\n", file.size());
+  }
+  file.close();
+
   Serial.println("Setup done");
+
+  
 }
 
 
